@@ -26,6 +26,7 @@ app.post("/user", function(req, res) {
 
 // Everything else requires authentication
 app.use(authenticate);
+app.use(express.static('../frontend/private'));
 
 /**
  * Use HTTP BasicAuth to protect API endpoints further down in the
@@ -38,11 +39,21 @@ function authenticate(req, res, next) {
     if (login === undefined || login.name === undefined || login.pass === undefined) {
         sendAuthRequest(res);
     } else {
-        if(!api.authenticateUser(login.name, login.pass)) {
+        let user = api.authenticateUser(login.name, login.pass);
+        if(!user.authenticated) {
             sendAuthRequest(res);
         } else {
-            req.authenticated_user = login.name;
+            req.authenticated_user = user;
             next(); // continue processing pipeline
         }
     }
+}
+
+/**
+ * Send an HTTP BasicAuth authentication request.
+ */
+function sendAuthRequest(res) {
+    res.statusCode = 401;
+    res.setHeader('WWW-Authenticate', 'Basic realm="MyRealmName"');
+    res.end('Unauthorized');
 }
