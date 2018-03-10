@@ -39,7 +39,9 @@ function authenticate(req, res, next) {
     if (login === undefined || login.name === undefined || login.pass === undefined) {
         sendAuthRequest(res);
     } else {
-        let user = api.authenticateUser(login.name, login.pass);
+        let user = api.authenticateUser(login.name, login.pass, function(user) {
+            return user;
+        });
         if(!user.authenticated) {
             sendAuthRequest(res);
         } else {
